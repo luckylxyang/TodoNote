@@ -24,14 +24,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkLogin() {
-        if (!LoginUtil.getInstance().checkLogin()){
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }else {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.container,new NoteFragment());
-            transaction.commit();
-        }
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.container,new NoteFragment());
+        transaction.commit();
     }
 }
