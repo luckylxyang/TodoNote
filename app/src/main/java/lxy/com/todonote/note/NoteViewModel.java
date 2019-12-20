@@ -32,45 +32,20 @@ public class NoteViewModel extends BaseViewModel {
         repository = new NoteRepository();
     }
 
-    public MutableLiveData<Resource<List<NoteModel>>> getUndoList(int page) {
-        Log.i("sfdf","1234");
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getUndoList(int page) {
         return repository.getUndoList(page);
     }
 
-    public MutableLiveData<Resource<List<NoteModel>>> refresh(){
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> refresh(){
         return getUndoList(0);
     }
 
-    public void deleteNote(int id){
-        NetworkManager.getManager().getServer().deleteNoteById(id)
-                .compose(RxHelper.observableIO2Main())
-                .subscribe(new BaseObserver<String>(){
-                    @Override
-                    public void onSuccess(String s) {
-                        ToastUtils.show("删除成功");
-                    }
-
-                    @Override
-                    public void onFailure(String message) {
-                        ToastUtils.show(message);
-                    }
-                });
+    public MutableLiveData<Resource<String>> deleteNote(int id){
+        return repository.deleteUntoNote(id);
     }
 
-    public void updateNoteStatus(int id,int status){
-        NetworkManager.getManager().getServer().updateNoteStatus(id, status)
-                .compose(RxHelper.observableIO2Main())
-                .subscribe(new BaseObserver<NoteModel>(){
-                    @Override
-                    public void onSuccess(NoteModel s) {
-
-                    }
-
-                    @Override
-                    public void onFailure(String message) {
-
-                    }
-                });
+    public MutableLiveData<Resource<NoteModel>> updateNoteStatus(int id,int status){
+        return repository.updateNoteStatus(id, status);
     }
 
 }

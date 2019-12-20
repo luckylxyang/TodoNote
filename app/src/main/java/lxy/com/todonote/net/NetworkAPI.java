@@ -62,7 +62,7 @@ public interface NetworkAPI {
      * @return
      */
     @GET("lg/todo/v2/list/{page}/json")
-    Observable<BaseResponse<BasePageModel<NoteModel>>> getUndolist(@Path("page") int page);
+    Observable<BaseResponse<BasePageModel<NoteModel>>> getUndoList(@Path("page") int page);
 
 
     /**

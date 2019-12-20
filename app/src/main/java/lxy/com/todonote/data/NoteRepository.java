@@ -4,13 +4,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.List;
 
-import io.reactivex.Observable;
+import lxy.com.todonote.base.BasePageModel;
 import lxy.com.todonote.base.BaseRepository;
-import lxy.com.todonote.login.LoginModel;
-import lxy.com.todonote.net.BaseResponse;
 import lxy.com.todonote.net.NetworkManager;
 import lxy.com.todonote.net.Resource;
-import lxy.com.todonote.net.RxHelper;
 import lxy.com.todonote.note.NoteModel;
 
 /**
@@ -19,9 +16,19 @@ import lxy.com.todonote.note.NoteModel;
  */
 public class NoteRepository extends BaseRepository{
 
-    public MutableLiveData<Resource<List<NoteModel>>> getUndoList(int page){
-        MutableLiveData<Resource<List<NoteModel>>> liveData = new MutableLiveData<>();
-        return observe(NetworkManager.getManager().getServer().getUndolist(page),liveData);
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getUndoList(int page){
+        MutableLiveData<Resource<BasePageModel<NoteModel>>> liveData = new MutableLiveData<>();
+        return observe(NetworkManager.getManager().getServer().getUndoList(page),liveData);
+    }
+
+    public MutableLiveData<Resource<String>> deleteUntoNote(int id){
+        MutableLiveData<Resource<String>> liveData = new MutableLiveData<>();
+        return observe(NetworkManager.getManager().getServer().deleteNoteById(id),liveData);
+    }
+
+    public MutableLiveData<Resource<NoteModel>> updateNoteStatus(int id,int status){
+        MutableLiveData<Resource<NoteModel>> liveData = new MutableLiveData<>();
+        return observe(getServer().updateNoteStatus(id, status),liveData);
     }
 
 

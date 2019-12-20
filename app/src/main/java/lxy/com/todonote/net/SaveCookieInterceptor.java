@@ -3,9 +3,13 @@ package lxy.com.todonote.net;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.util.Log;
 
+
+import com.tencent.mmkv.MMKV;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,41 +31,17 @@ public class SaveCookieInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
          Response response = chain.proceed(chain.request());
-//        Log.i(TAG,response.body().string());
-        if (!response.headers("set-Cookie").isEmpty()){
+        List<String> headers = response.headers("Set-Cookie");
+        if (!headers.isEmpty()){
             HashSet<String> cookies = new HashSet<>();
-
-            for (String header : response.headers("set-cookie")) {
+            Log.i("OkCookieTAG", Arrays.toString(headers.toArray()));
+            for (String header : headers) {
+                Log.d("OkCookieSave",header);
                 cookies.add(header);
             }
             saveCookie(chain.request().url().toString(), chain.request().url().host(), cookies);
         }
         return response;
-    }
-
-    private String encodeCookie(List<String> cookies) {
-        StringBuilder sb = new StringBuilder();
-        Set<String> set = new HashSet<>();
-        for (String cookie : cookies) {
-            String[] arr = cookie.split(";");
-            for (String s : arr) {
-                if (set.contains(s)) {
-                    continue;
-                }
-                set.add(s);
-            }
-        }
-
-        for (String cookie : set) {
-            sb.append(cookie).append(";");
-        }
-
-        int last = sb.lastIndexOf(";");
-        if (last != -1 && sb.length() - 1 == last) {
-            sb.deleteCharAt(last);
-        }
-
-        return sb.toString();
     }
 
     /**
@@ -71,16 +51,28 @@ public class SaveCookieInterceptor implements Interceptor {
     private void saveCookie(String url, String domain, HashSet cookies) {
         SharedPreferences sp = NoteApp.getContext().getSharedPreferences("cookies_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
+        MMKV mmkv = MMKV.mmkvWithID("cookies_prefs", MMKV.MULTI_PROCESS_MODE);
 
         if (TextUtils.isEmpty(url)) {
             throw new NullPointerException("url is null.");
         } else {
-            editor.putStringSet(url, cookies);
+            mmkv.encode(url,cookies);
         }
 
         if (!TextUtils.isEmpty(domain)) {
-            editor.putStringSet(domain, cookies);
+            mmkv.encode(domain,cookies);
         }
         editor.apply();
+    }
+
+    private HashSet getCookie(String url, String domain) {
+        SharedPreferences sp = NoteApp.getContext().getSharedPreferences("cookies_prefs", Context.MODE_PRIVATE);
+        if (!TextUtils.isEmpty(url) && sp.contains(url)) {
+            return (HashSet) sp.getStringSet(url,new HashSet<>());
+        }
+        if (!TextUtils.isEmpty(domain) && sp.contains(domain) ) {
+            return (HashSet) sp.getStringSet(domain,new HashSet<>());
+        }
+        return new HashSet<>();
     }
 }

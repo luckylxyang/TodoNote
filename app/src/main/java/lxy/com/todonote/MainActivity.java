@@ -6,6 +6,8 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.tencent.mmkv.MMKV;
+
 import lxy.com.todonote.login.LoginActivity;
 import lxy.com.todonote.login.LoginUtil;
 import lxy.com.todonote.note.NoteFragment;
@@ -19,7 +21,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        String rootDir = MMKV.initialize(this);
+        System.out.println("mmkv root: " + rootDir);
         checkLogin();
     }
 

@@ -22,6 +22,7 @@ import java.util.List;
 import lxy.com.todonote.R;
 import lxy.com.todonote.addnote.AddTodoNoteFragment;
 import lxy.com.todonote.base.BaseActivity;
+import lxy.com.todonote.base.BasePageModel;
 import lxy.com.todonote.baseadapter.BaseAdapter;
 import lxy.com.todonote.databinding.FragmentNoteBinding;
 import lxy.com.todonote.net.Resource;
@@ -79,10 +80,30 @@ public class NoteFragment extends Fragment {
                 NoteModel model = (NoteModel) adapter.getItemByPosition(position);
                 switch (view.getId()) {
                     case R.id.note_delete:
-                        viewModel.deleteNote(model.getId());
+                        viewModel.deleteNote(model.getId()).observe(NoteFragment.this, new Observer<Resource<String>>() {
+                            @Override
+                            public void onChanged(Resource<String> stringResource) {
+                                stringResource.handler(new BaseActivity.OnCallback<String>() {
+                                    @Override
+                                    public void onSuccess(String data) {
+                                        ToastUtils.show("删除成功");
+                                        models.remove(position);
+                                        adapter.notifyItemRemoved(position);
+                                    }
+                                });
+                            }
+                        });
                         break;
                     case R.id.cb_note_finish:
-                        viewModel.updateNoteStatus(model.getId(), 1);
+                        viewModel.updateNoteStatus(model.getId(), 1).observe(NoteFragment.this, noteModelResource -> {
+                            noteModelResource.handler(new BaseActivity.OnCallback<NoteModel>() {
+                                @Override
+                                public void onSuccess(NoteModel data) {
+                                    model.setStatus(data.getStatus());
+                                    adapter.notifyItemChanged(position);
+                                }
+                            });
+                        });
                         break;
                     default:
                         break;
@@ -100,17 +121,18 @@ public class NoteFragment extends Fragment {
     }
 
     private void observe() {
-        viewModel.getUndoList(page).observe(this, new Observer<Resource<List<NoteModel>>>() {
+        viewModel.getUndoList(page).observe(this, new Observer<Resource<BasePageModel<NoteModel>>>() {
             @Override
-            public void onChanged(Resource<List<NoteModel>> listResource) {
-                listResource.handler(new BaseActivity.OnCallback<List<NoteModel>>() {
+            public void onChanged(Resource<BasePageModel<NoteModel>> listResource) {
+                listResource.handler(new BaseActivity.OnCallback<BasePageModel<NoteModel>>() {
                     @Override
-                    public void onSuccess(List<NoteModel> data) {
+                    public void onSuccess(BasePageModel<NoteModel> data) {
                         if (page == 0) {
                             models.clear();
                         }
-                        models.addAll(data);
+                        models.addAll(data.getDatas());
                         page++;
+                        adapter.notifyDataSetChanged();
                     }
                 });
             }
