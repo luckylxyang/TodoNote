@@ -40,7 +40,7 @@
             android:layout_height="24dp"/>
 
         <TextView
-            android:id="@+id/note_item_detail"
+            android:id="@+id/tv_note_time"
             android:textSize="@dimen/textNormal"
             android:layout_below="@id/tv_note_title"
             android:layout_alignLeft="@id/tv_note_title"

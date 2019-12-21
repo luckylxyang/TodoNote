@@ -16,6 +16,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,8 +31,6 @@ import lxy.com.todonote.net.Resource;
 import lxy.com.todonote.utils.ToastUtils;
 
 /**
- * A simple {@link Fragment} subclass.
- *
  * @author lxy
  */
 public class NoteFragment extends Fragment {
@@ -70,49 +70,53 @@ public class NoteFragment extends Fragment {
     private void initListener() {
         binding.noteRefresh.setOnRefreshListener(() -> {
             viewModel.refresh().observe(this, noteModels -> {
+                models.clear();
+                models.addAll(noteModels.data.getDatas());
                 adapter.notifyDataSetChanged();
                 binding.noteRefresh.setRefreshing(false);
             });
         });
-        adapter.addItemChildClickListener(new BaseAdapter.OnItemChildClickListener() {
-            @Override
-            public void onCLick(BaseAdapter adapter, View view, int position) {
-                NoteModel model = (NoteModel) adapter.getItemByPosition(position);
-                switch (view.getId()) {
-                    case R.id.note_delete:
-                        viewModel.deleteNote(model.getId()).observe(NoteFragment.this, new Observer<Resource<String>>() {
+        adapter.addItemChildClickListener((adapter, view, position) -> {
+            NoteModel model = (NoteModel) adapter.getItemByPosition(position);
+            switch (view.getId()) {
+                case R.id.note_delete:
+                    viewModel.deleteNote(model.getId()).observe(NoteFragment.this, stringResource -> stringResource.handler(new BaseActivity.OnCallback<String>() {
+                        @Override
+                        public void onSuccess(String data) {
+                            ToastUtils.show("删除成功");
+                            models.remove(position);
+                            adapter.notifyItemRemoved(position);
+                        }
+                    }));
+                    break;
+                case R.id.cb_note_finish:
+                    int status = model.getStatus() == 0 ? 1 : 0;
+                    viewModel.updateNoteStatus(model.getId(), status).observe(NoteFragment.this, noteModelResource -> {
+                        noteModelResource.handler(new BaseActivity.OnCallback<NoteModel>() {
                             @Override
-                            public void onChanged(Resource<String> stringResource) {
-                                stringResource.handler(new BaseActivity.OnCallback<String>() {
-                                    @Override
-                                    public void onSuccess(String data) {
-                                        ToastUtils.show("删除成功");
-                                        models.remove(position);
-                                        adapter.notifyItemRemoved(position);
-                                    }
-                                });
+                            public void onSuccess(NoteModel data) {
+                                model.setStatus(data.getStatus());
+                                adapter.notifyItemChanged(position);
                             }
                         });
-                        break;
-                    case R.id.cb_note_finish:
-                        viewModel.updateNoteStatus(model.getId(), 1).observe(NoteFragment.this, noteModelResource -> {
-                            noteModelResource.handler(new BaseActivity.OnCallback<NoteModel>() {
-                                @Override
-                                public void onSuccess(NoteModel data) {
-                                    model.setStatus(data.getStatus());
-                                    adapter.notifyItemChanged(position);
-                                }
-                            });
-                        });
-                        break;
-                    default:
-                        break;
-                }
+                    });
+                    break;
+                default:
+                    break;
             }
+        });
+        adapter.setOnItemListener((v,position) -> {
+            NoteModel model = models.get(position);
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            AddTodoNoteFragment fragment = AddTodoNoteFragment.newInstance(model.getType(),new Gson().toJson(model));
+            fragment.setTargetFragment(NoteFragment.this, 8250);
+            transaction.add(R.id.container, fragment);
+            transaction.addToBackStack("");
+            transaction.commit();
         });
         binding.noteAdd.setOnClickListener(v -> {
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            AddTodoNoteFragment fragment = new AddTodoNoteFragment();
+            AddTodoNoteFragment fragment = AddTodoNoteFragment.newInstance(0,"");
             fragment.setTargetFragment(NoteFragment.this, 8250);
             transaction.add(R.id.container, fragment);
             transaction.addToBackStack("");
@@ -121,21 +125,16 @@ public class NoteFragment extends Fragment {
     }
 
     private void observe() {
-        viewModel.getUndoList(page).observe(this, new Observer<Resource<BasePageModel<NoteModel>>>() {
+        viewModel.getUndoList(page).observe(this, listResource -> listResource.handler(new BaseActivity.OnCallback<BasePageModel<NoteModel>>() {
             @Override
-            public void onChanged(Resource<BasePageModel<NoteModel>> listResource) {
-                listResource.handler(new BaseActivity.OnCallback<BasePageModel<NoteModel>>() {
-                    @Override
-                    public void onSuccess(BasePageModel<NoteModel> data) {
-                        if (page == 0) {
-                            models.clear();
-                        }
-                        models.addAll(data.getDatas());
-                        page++;
-                        adapter.notifyDataSetChanged();
-                    }
-                });
+            public void onSuccess(BasePageModel<NoteModel> data) {
+                if (page == 0) {
+                    models.clear();
+                }
+                models.addAll(data.getDatas());
+                page++;
+                adapter.notifyDataSetChanged();
             }
-        });
+        }));
     }
 }

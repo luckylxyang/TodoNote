@@ -88,6 +88,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             if (code == Constants.NET_FAIL_LOGIN){
                 Intent intent = new Intent(NoteApp.getContext(), LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 NoteApp.getContext().startActivity(intent);
             }
         }

@@ -31,5 +31,16 @@ public class NoteRepository extends BaseRepository{
         return observe(getServer().updateNoteStatus(id, status),liveData);
     }
 
+    public MutableLiveData<Resource<NoteModel>> addNote(String title,String content,
+                                                        String dateStr,int type,int priority){
+        MutableLiveData<Resource<NoteModel>> liveData = new MutableLiveData<>();
+        return observe(getServer().addNote(title, content, dateStr, type, priority),liveData);
+    }
+
+    public MutableLiveData<Resource<NoteModel>> updateNote(int id,String title,String content,
+                                                        String dateStr,int type){
+        MutableLiveData<Resource<NoteModel>> liveData = new MutableLiveData<>();
+        return observe(getServer().updateNote(id,title, content, dateStr, type),liveData);
+    }
 
 }
