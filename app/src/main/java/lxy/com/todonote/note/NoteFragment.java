@@ -10,8 +10,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.method.MovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +27,7 @@ import java.util.List;
 import lxy.com.todonote.R;
 import lxy.com.todonote.addnote.AddTodoNoteFragment;
 import lxy.com.todonote.base.BaseActivity;
+import lxy.com.todonote.base.BaseFragment;
 import lxy.com.todonote.base.BasePageModel;
 import lxy.com.todonote.baseadapter.BaseAdapter;
 import lxy.com.todonote.databinding.FragmentNoteBinding;
@@ -33,13 +37,11 @@ import lxy.com.todonote.utils.ToastUtils;
 /**
  * @author lxy
  */
-public class NoteFragment extends Fragment {
+public class NoteFragment extends BaseFragment {
 
     private FragmentNoteBinding binding;
     private NoteViewModel viewModel;
     private NoteAdapter adapter;
-    private int page = 0;
-    public List<NoteModel> models;
 
 
     @Override
@@ -60,8 +62,7 @@ public class NoteFragment extends Fragment {
     }
 
     private void initView() {
-        models = new ArrayList<>();
-        adapter = new NoteAdapter(models, R.layout.item_note);
+        adapter = new NoteAdapter(viewModel.models, R.layout.item_note);
         binding.noteRv.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.noteRv.setAdapter(adapter);
         binding.noteRefresh.setColorSchemeColors(getResources().getColor(R.color.colorPrimary));
@@ -69,22 +70,17 @@ public class NoteFragment extends Fragment {
 
     private void initListener() {
         binding.noteRefresh.setOnRefreshListener(() -> {
-            viewModel.refresh().observe(this, noteModels -> {
-                models.clear();
-                models.addAll(noteModels.data.getDatas());
-                adapter.notifyDataSetChanged();
-                binding.noteRefresh.setRefreshing(false);
-            });
+            refresh();
         });
         adapter.addItemChildClickListener((adapter, view, position) -> {
             NoteModel model = (NoteModel) adapter.getItemByPosition(position);
             switch (view.getId()) {
                 case R.id.note_delete:
-                    viewModel.deleteNote(model.getId()).observe(NoteFragment.this, stringResource -> stringResource.handler(new BaseActivity.OnCallback<String>() {
+                    viewModel.deleteNote(model.getId()).observe(NoteFragment.this, stringResource -> stringResource.handler(new OnCallback<String>() {
                         @Override
                         public void onSuccess(String data) {
                             ToastUtils.show("删除成功");
-                            models.remove(position);
+                            viewModel.models.remove(position);
                             adapter.notifyItemRemoved(position);
                         }
                     }));
@@ -92,7 +88,7 @@ public class NoteFragment extends Fragment {
                 case R.id.cb_note_finish:
                     int status = model.getStatus() == 0 ? 1 : 0;
                     viewModel.updateNoteStatus(model.getId(), status).observe(NoteFragment.this, noteModelResource -> {
-                        noteModelResource.handler(new BaseActivity.OnCallback<NoteModel>() {
+                        noteModelResource.handler(new OnCallback<NoteModel>() {
                             @Override
                             public void onSuccess(NoteModel data) {
                                 model.setStatus(data.getStatus());
@@ -106,8 +102,9 @@ public class NoteFragment extends Fragment {
             }
         });
         adapter.setOnItemListener((v,position) -> {
-            NoteModel model = models.get(position);
+            NoteModel model = viewModel.models.get(position);
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.fragment_up, R.anim.fragment_exit);
             AddTodoNoteFragment fragment = AddTodoNoteFragment.newInstance(model.getType(),new Gson().toJson(model));
             fragment.setTargetFragment(NoteFragment.this, 8250);
             transaction.add(R.id.container, fragment);
@@ -117,6 +114,7 @@ public class NoteFragment extends Fragment {
         binding.noteAdd.setOnClickListener(v -> {
             FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
             AddTodoNoteFragment fragment = AddTodoNoteFragment.newInstance(0,"");
+            transaction.setCustomAnimations(R.anim.fragment_enter, R.anim.fragment_exit);
             fragment.setTargetFragment(NoteFragment.this, 8250);
             transaction.add(R.id.container, fragment);
             transaction.addToBackStack("");
@@ -124,17 +122,22 @@ public class NoteFragment extends Fragment {
         });
     }
 
+    public void refresh() {
+        viewModel.refresh().observe(this, noteModels -> {
+            viewModel.models.clear();
+            viewModel.models.addAll(noteModels.data.getDatas());
+            adapter.notifyDataSetChanged();
+            binding.noteRefresh.setRefreshing(false);
+        });
+    }
+
     private void observe() {
-        viewModel.getUndoList(page).observe(this, listResource -> listResource.handler(new BaseActivity.OnCallback<BasePageModel<NoteModel>>() {
+        viewModel.getAllTodoList().observe(this, listResource -> listResource.handler(new OnCallback<BasePageModel<NoteModel>>() {
             @Override
             public void onSuccess(BasePageModel<NoteModel> data) {
-                if (page == 0) {
-                    models.clear();
-                }
-                models.addAll(data.getDatas());
-                page++;
                 adapter.notifyDataSetChanged();
             }
         }));
     }
+
 }

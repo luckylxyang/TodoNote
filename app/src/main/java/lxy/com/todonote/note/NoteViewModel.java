@@ -24,28 +24,47 @@ import lxy.com.todonote.utils.ToastUtils;
  */
 public class NoteViewModel extends BaseViewModel {
 
-
     public NoteRepository repository;
+    /**
+     * 是否还有未完成列表
+     */
+    public boolean hasUndo;
+    public int page = 1;
+    public int doPage = 1;
+    public List<NoteModel> models;
 
     public NoteViewModel(@NonNull Application application) {
         super(application);
         repository = new NoteRepository();
+        hasUndo = true;
+        models = new ArrayList<>();
     }
 
-    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getUndoList(int page) {
-        return repository.getUndoList(page);
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getUndoList(int page, int status) {
+        return repository.getUndoList(page, status);
     }
 
-    public MutableLiveData<Resource<BasePageModel<NoteModel>>> refresh(){
-        return getUndoList(0);
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> refresh() {
+        page = 1;
+        doPage = 1;
+        hasUndo = true;
+        return getAllTodoList();
     }
 
-    public MutableLiveData<Resource<String>> deleteNote(int id){
+    public MutableLiveData<Resource<String>> deleteNote(int id) {
         return repository.deleteUntoNote(id);
     }
 
-    public MutableLiveData<Resource<NoteModel>> updateNoteStatus(int id,int status){
+    public MutableLiveData<Resource<NoteModel>> updateNoteStatus(int id, int status) {
         return repository.updateNoteStatus(id, status);
+    }
+
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getAllTodoList() {
+        if (hasUndo) {
+            return getUndoList(page, 0);
+        }else {
+            return getUndoList(doPage, 1);
+        }
     }
 
 }

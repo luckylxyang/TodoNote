@@ -1,7 +1,5 @@
 package lxy.com.todonote.net;
 
-import lxy.com.todonote.base.Constants;
-
 /**
  * Creator : lxy
  * date: 2019/12/18
@@ -48,7 +46,7 @@ public class Resource<T> {
 
     public static <T> Resource<T> response(BaseResponse<T> data) {
         if (data != null) {
-            if (data.getErrorCode() == Constants.NET_SUCCESS) {
+            if (data.getErrorCode() == NetConstants.NET_SUCCESS) {
                 return new Resource<>(SUCCESS, data.getData(), null);
             }
             return new Resource<>(FAIL, data.getErrorCode(), null, data.getErrorMsg());

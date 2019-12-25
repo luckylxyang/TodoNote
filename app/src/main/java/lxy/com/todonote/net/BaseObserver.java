@@ -9,7 +9,6 @@ import java.net.SocketTimeoutException;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
-import lxy.com.todonote.base.Constants;
 
 /**
  * Created by Administrator on 2019/11/8.
@@ -26,7 +25,7 @@ public abstract class BaseObserver<T> implements Observer<BaseResponse<T>> {
 
     @Override
     public void onNext(BaseResponse<T> response) {
-        if (Constants.NET_SUCCESS == response.getErrorCode()){
+        if (NetConstants.NET_SUCCESS == response.getErrorCode()){
             onSuccess(response.getData());
         }else {
             Log.e(TAG,response.getErrorMsg());

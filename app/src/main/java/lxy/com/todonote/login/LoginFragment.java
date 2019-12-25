@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 
 import lxy.com.todonote.MainActivity;
 import lxy.com.todonote.R;
+import lxy.com.todonote.base.BaseFragment;
 import lxy.com.todonote.net.BaseObserver;
 import lxy.com.todonote.net.NetworkManager;
 import lxy.com.todonote.net.RxHelper;
@@ -29,7 +30,7 @@ import lxy.com.todonote.utils.ToastUtils;
  * date: 2019/2/27
  */
 
-public class LoginFragment extends Fragment {
+public class LoginFragment extends BaseFragment {
     private static String TAG = LoginFragment.class.getSimpleName();
 
     private TextInputEditText etUsername;

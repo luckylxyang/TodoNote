@@ -6,9 +6,13 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
+import com.google.gson.Gson;
 import com.tencent.mmkv.MMKV;
 
+import org.json.JSONArray;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -32,14 +36,15 @@ public class SaveCookieInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
          Response response = chain.proceed(chain.request());
         List<String> headers = response.headers("Set-Cookie");
-        if (!headers.isEmpty()){
+        if (!headers.isEmpty() && chain.request().url().toString().contains(NetConstants.URL_LOGIN)){
             HashSet<String> cookies = new HashSet<>();
-            Log.i("OkCookieTAG", Arrays.toString(headers.toArray()));
+            List<String> model = new ArrayList<>();
             for (String header : headers) {
-                Log.d("OkCookieSave",header);
                 cookies.add(header);
+                model.add(header);
             }
-            saveCookie(chain.request().url().toString(), chain.request().url().host(), cookies);
+//            saveCookie(chain.request().url().toString(), chain.request().url().host(), cookies);
+            saveCookie(chain.request().url().toString(), chain.request().url().host(), model);
         }
         return response;
     }
@@ -52,27 +57,35 @@ public class SaveCookieInterceptor implements Interceptor {
         SharedPreferences sp = NoteApp.getContext().getSharedPreferences("cookies_prefs", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         MMKV mmkv = MMKV.mmkvWithID("cookies_prefs", MMKV.MULTI_PROCESS_MODE);
-
-        if (TextUtils.isEmpty(url)) {
-            throw new NullPointerException("url is null.");
-        } else {
-            mmkv.encode(url,cookies);
+        Log.i("OkCookieSave", Arrays.toString(cookies.toArray()));
+        if (!TextUtils.isEmpty(url)) {
+            boolean encode = mmkv.encode(url, cookies);
+            Log.i("OkCookieResult",String.valueOf(encode));
+            editor.putStringSet(url,cookies);
         }
 
         if (!TextUtils.isEmpty(domain)) {
-            mmkv.encode(domain,cookies);
+            boolean encode = mmkv.encode(domain,cookies);
+            Log.i("OkCookieResultdomain",String.valueOf(encode));
         }
-        editor.apply();
+//        editor.apply();
     }
 
-    private HashSet getCookie(String url, String domain) {
+    private void saveCookie(String url, String domain, List<String> cookies) {
         SharedPreferences sp = NoteApp.getContext().getSharedPreferences("cookies_prefs", Context.MODE_PRIVATE);
-        if (!TextUtils.isEmpty(url) && sp.contains(url)) {
-            return (HashSet) sp.getStringSet(url,new HashSet<>());
+        SharedPreferences.Editor editor = sp.edit();
+        Log.i("OkCookieSave", Arrays.toString(cookies.toArray()));
+        JSONArray array = new JSONArray();
+        for (String cookie : cookies) {
+            array.put(cookie);
         }
-        if (!TextUtils.isEmpty(domain) && sp.contains(domain) ) {
-            return (HashSet) sp.getStringSet(domain,new HashSet<>());
+        if (!TextUtils.isEmpty(url)) {
+            editor.putString(url,array.toString());
         }
-        return new HashSet<>();
+
+        if (!TextUtils.isEmpty(domain)) {
+            editor.putString(domain,array.toString());
+        }
+        editor.apply();
     }
 }

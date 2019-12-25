@@ -2,10 +2,11 @@ package lxy.com.todonote.data;
 
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.List;
-
+import io.reactivex.Observable;
 import lxy.com.todonote.base.BasePageModel;
 import lxy.com.todonote.base.BaseRepository;
+import lxy.com.todonote.net.NetConstants;
+import lxy.com.todonote.net.BaseResponse;
 import lxy.com.todonote.net.NetworkManager;
 import lxy.com.todonote.net.Resource;
 import lxy.com.todonote.note.NoteModel;
@@ -16,9 +17,9 @@ import lxy.com.todonote.note.NoteModel;
  */
 public class NoteRepository extends BaseRepository{
 
-    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getUndoList(int page){
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getUndoList(int page,int status){
         MutableLiveData<Resource<BasePageModel<NoteModel>>> liveData = new MutableLiveData<>();
-        return observe(NetworkManager.getManager().getServer().getUndoList(page),liveData);
+        return observe(NetworkManager.getManager().getServer().getUndoList(page,status),liveData);
     }
 
     public MutableLiveData<Resource<String>> deleteUntoNote(int id){
@@ -41,6 +42,19 @@ public class NoteRepository extends BaseRepository{
                                                         String dateStr,int type){
         MutableLiveData<Resource<NoteModel>> liveData = new MutableLiveData<>();
         return observe(getServer().updateNote(id,title, content, dateStr, type),liveData);
+    }
+
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getAllList(int page,int status){
+        Observable<BaseResponse<BasePageModel<NoteModel>>> undoList = NetworkManager.getManager().getServer().getUndoList(page, 1);
+        Observable<BaseResponse<BasePageModel<NoteModel>>> doList = NetworkManager.getManager().getServer().getUndoList(page, 0);
+        MutableLiveData<Resource<BasePageModel<NoteModel>>> liveData = new MutableLiveData<>();
+        Observable<BaseResponse<BasePageModel<NoteModel>>> zip = Observable.zip(undoList, doList, (base1, base2) -> {
+            if (base1.getErrorCode() == NetConstants.NET_SUCCESS && base1.getErrorCode() == NetConstants.NET_SUCCESS) {
+//                base1.getData().getDatas()
+            }
+            return base1;
+        });
+        return observe(zip,liveData);
     }
 
 }

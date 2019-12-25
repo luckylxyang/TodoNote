@@ -5,6 +5,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -17,18 +18,25 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.DatePicker;
 
 import com.google.gson.Gson;
 
 import lxy.com.todonote.R;
 import lxy.com.todonote.base.BaseActivity;
+import lxy.com.todonote.base.BaseFragment;
 import lxy.com.todonote.databinding.AddTodoNoteFragmentBinding;
 import lxy.com.todonote.net.Resource;
+import lxy.com.todonote.note.NoteFragment;
 import lxy.com.todonote.note.NoteModel;
 import lxy.com.todonote.utils.ToastUtils;
 
-public class AddTodoNoteFragment extends Fragment {
+/**
+ * @author lxy
+ */
+public class AddTodoNoteFragment extends BaseFragment {
 
     private static final String MODEL_ADD = "add";
     private static final String MODEL_UPDATE = "update";
@@ -73,6 +81,17 @@ public class AddTodoNoteFragment extends Fragment {
         }
         binding.addNoteTitle.addTextChangedListener(titleWatcher);
         initListener();
+        openInput();
+    }
+
+    private void openInput(){
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+    }
+
+    private void hideInput(){
+        InputMethodManager inputmanger = (InputMethodManager) getContext()
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputmanger.hideSoftInputFromWindow(binding.addNoteTitle.getWindowToken(), 0);
     }
 
     private void initListener() {
@@ -94,10 +113,15 @@ public class AddTodoNoteFragment extends Fragment {
         mViewModel.updateNote(id,title, "", dateStr, type).observe(AddTodoNoteFragment.this, new Observer<Resource<NoteModel>>() {
             @Override
             public void onChanged(Resource<NoteModel> resource) {
-                resource.handler(new BaseActivity.OnCallback<NoteModel>() {
+                resource.handler(new OnCallback<NoteModel>() {
                     @Override
                     public void onSuccess(NoteModel data) {
                         ToastUtils.show("修改成功");
+                        Fragment fragment = getTargetFragment();
+                        if (fragment != null){
+                            NoteFragment frag = (NoteFragment) fragment;
+                            frag.refresh();
+                        }
                         getActivity().getSupportFragmentManager().popBackStack();
                     }
                 });
@@ -109,10 +133,16 @@ public class AddTodoNoteFragment extends Fragment {
         mViewModel.addNote(title, "", dateStr, type, 1).observe(AddTodoNoteFragment.this, new Observer<Resource<NoteModel>>() {
             @Override
             public void onChanged(Resource<NoteModel> resource) {
-                resource.handler(new BaseActivity.OnCallback<NoteModel>() {
+                resource.handler(new OnCallback<NoteModel>() {
                     @Override
                     public void onSuccess(NoteModel data) {
                         ToastUtils.show("创建成功");
+                        Fragment fragment = getTargetFragment();
+                        if (fragment != null){
+                            NoteFragment frag = (NoteFragment) fragment;
+                            frag.refresh();
+                        }
+                        hideInput();
                         getActivity().getSupportFragmentManager().popBackStack();
                     }
                 });
@@ -152,4 +182,10 @@ public class AddTodoNoteFragment extends Fragment {
 
         }
     };
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        hideInput();
+    }
 }

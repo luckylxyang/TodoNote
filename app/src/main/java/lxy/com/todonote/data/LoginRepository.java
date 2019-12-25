@@ -15,9 +15,9 @@ import lxy.com.todonote.note.NoteModel;
  */
 public class LoginRepository extends BaseRepository {
 
-    public MutableLiveData<Resource<List<NoteModel>>> getUndoList(int page){
+    public MutableLiveData<Resource<List<NoteModel>>> getUndoList(int page,int status){
         MutableLiveData<Resource<List<NoteModel>>> liveData = new MutableLiveData<>();
-        return observe(NetworkManager.getManager().getServer().getUndoList(page),liveData);
+        return observe(NetworkManager.getManager().getServer().getUndoList(page,status),liveData);
     }
 
 }

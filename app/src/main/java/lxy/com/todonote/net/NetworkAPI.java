@@ -10,6 +10,7 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * @author : lxy
@@ -28,7 +29,7 @@ public interface NetworkAPI {
      * @param password
      * @return
      */
-    @POST("user/login")
+    @POST(NetConstants.URL_LOGIN)
     @FormUrlEncoded
     Observable<BaseResponse<LoginModel>> login(@Field("username") String username,
                                                @Field("password") String password);
@@ -62,7 +63,8 @@ public interface NetworkAPI {
      * @return
      */
     @GET("lg/todo/v2/list/{page}/json")
-    Observable<BaseResponse<BasePageModel<NoteModel>>> getUndoList(@Path("page") int page);
+    Observable<BaseResponse<BasePageModel<NoteModel>>> getUndoList(@Path("page") int page,
+                                                                   @Query("status")int status);
 
 
     /**
