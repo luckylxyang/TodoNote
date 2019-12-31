@@ -42,7 +42,7 @@
                 android:drawableLeft="@drawable/add_note_bg_time"
                 android:drawablePadding="5dp"
                 android:gravity="center"
-                android:text="设置时间"
+                android:text="@string/add_note_set_time"
                 android:textSize="@dimen/textNormal"
                 android:layout_marginTop="15dp"
                 app:layout_constraintLeft_toLeftOf="@id/add_note_title"

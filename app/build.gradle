@@ -52,6 +52,6 @@ dependencies {
     implementation 'android.arch.lifecycle:extensions:1.1.1'
     implementation 'com.google.android.material:material:1.2.0-alpha02'
 
-    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.x-SNAPSHOT'
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.0-beta4'
     implementation 'com.tencent:mmkv:1.0.23'
 }

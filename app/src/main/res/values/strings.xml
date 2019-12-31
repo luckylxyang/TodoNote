@@ -41,6 +41,6 @@
     <string name="hot_website">常用网站</string>
     <string name="no_login">未</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="add_note_set_time">设置时间</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

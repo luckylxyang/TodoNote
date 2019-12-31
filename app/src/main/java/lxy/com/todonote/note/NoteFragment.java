@@ -6,32 +6,21 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.text.method.MovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import lxy.com.todonote.R;
 import lxy.com.todonote.addnote.AddTodoNoteFragment;
-import lxy.com.todonote.base.BaseActivity;
 import lxy.com.todonote.base.BaseFragment;
 import lxy.com.todonote.base.BasePageModel;
-import lxy.com.todonote.baseadapter.BaseAdapter;
 import lxy.com.todonote.databinding.FragmentNoteBinding;
-import lxy.com.todonote.net.Resource;
 import lxy.com.todonote.utils.ToastUtils;
 
 /**
@@ -58,7 +47,7 @@ public class NoteFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         initView();
         initListener();
-        observe();
+        refresh();
     }
 
     private void initView() {
@@ -92,7 +81,11 @@ public class NoteFragment extends BaseFragment {
                             @Override
                             public void onSuccess(NoteModel data) {
                                 model.setStatus(data.getStatus());
-                                adapter.notifyItemChanged(position);
+                                if (data.getStatus() == 1) {
+                                    adapter.notifyItemMoved(position, adapter.getItemCount() - 1);
+                                }else{
+                                    adapter.notifyItemMoved(position, 0);
+                                }
                             }
                         });
                     });
@@ -120,6 +113,7 @@ public class NoteFragment extends BaseFragment {
             transaction.addToBackStack("");
             transaction.commit();
         });
+        observe();
     }
 
     public void refresh() {
@@ -132,9 +126,11 @@ public class NoteFragment extends BaseFragment {
     }
 
     private void observe() {
-        viewModel.getAllTodoList().observe(this, listResource -> listResource.handler(new OnCallback<BasePageModel<NoteModel>>() {
+        viewModel.getUndoList().observe(this, listResource -> listResource.handler(new OnCallback<BasePageModel<NoteModel>>() {
             @Override
             public void onSuccess(BasePageModel<NoteModel> data) {
+                viewModel.page++;
+                viewModel.models.addAll(data.getDatas());
                 adapter.notifyDataSetChanged();
             }
         }));

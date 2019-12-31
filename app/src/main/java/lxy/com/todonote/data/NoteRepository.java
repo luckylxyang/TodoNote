@@ -44,13 +44,13 @@ public class NoteRepository extends BaseRepository{
         return observe(getServer().updateNote(id,title, content, dateStr, type),liveData);
     }
 
-    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getAllList(int page,int status){
-        Observable<BaseResponse<BasePageModel<NoteModel>>> undoList = NetworkManager.getManager().getServer().getUndoList(page, 1);
-        Observable<BaseResponse<BasePageModel<NoteModel>>> doList = NetworkManager.getManager().getServer().getUndoList(page, 0);
+    public MutableLiveData<Resource<BasePageModel<NoteModel>>> getFirstList(){
+        Observable<BaseResponse<BasePageModel<NoteModel>>> undoList = NetworkManager.getManager().getServer().getUndoList(1, 0);
+        Observable<BaseResponse<BasePageModel<NoteModel>>> doList = NetworkManager.getManager().getServer().getUndoList(1, 1);
         MutableLiveData<Resource<BasePageModel<NoteModel>>> liveData = new MutableLiveData<>();
         Observable<BaseResponse<BasePageModel<NoteModel>>> zip = Observable.zip(undoList, doList, (base1, base2) -> {
             if (base1.getErrorCode() == NetConstants.NET_SUCCESS && base1.getErrorCode() == NetConstants.NET_SUCCESS) {
-//                base1.getData().getDatas()
+                base1.getData().getDatas().addAll(base2.getData().getDatas());
             }
             return base1;
         });
