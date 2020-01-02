@@ -4,20 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
-
-
-import com.google.gson.Gson;
-import com.tencent.mmkv.MMKV;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
 
 import lxy.com.todonote.NoteApp;
-import okhttp3.Headers;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;

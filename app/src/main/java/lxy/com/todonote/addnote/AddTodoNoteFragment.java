@@ -84,20 +84,31 @@ public class AddTodoNoteFragment extends BaseFragment {
         }
         binding.addNoteTitle.addTextChangedListener(titleWatcher);
         Drawable drawable = getResources().getDrawable(R.drawable.add_note_ic_clock);
-        drawable.setBounds(0, 0, 35, 35);
+        drawable.setBounds(0, 0, 40, 40);
         binding.addNoteTime.setCompoundDrawables(drawable, null, null, null);
         initListener();
         openInput();
     }
 
     private void openInput() {
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        binding.addNoteTitle.post(new Runnable() {
+            @Override
+            public void run() {
+                binding.addNoteTitle.setFocusable(true);
+                binding.addNoteTitle.setFocusableInTouchMode(true);
+                binding.addNoteTitle.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null){
+                    imm.showSoftInput(binding.addNoteTitle,InputMethodManager.SHOW_IMPLICIT);
+                }
+            }
+        });
     }
 
     private void hideInput() {
         InputMethodManager inputmanger = (InputMethodManager) getContext()
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputmanger.hideSoftInputFromWindow(binding.addNoteTitle.getWindowToken(), 0);
+        inputmanger.hideSoftInputFromWindow(binding.addNoteTitle.getWindowToken(), InputMethodManager.HIDE_IMPLICIT_ONLY);
     }
 
     private void initListener() {
@@ -146,6 +157,7 @@ public class AddTodoNoteFragment extends BaseFragment {
                     @Override
                     public void onSuccess(NoteModel data) {
                         ToastUtils.show("创建成功");
+//                        mViewModel.addAlarmToCalendar(data,getContext());
                         Fragment fragment = getTargetFragment();
                         if (fragment != null) {
                             NoteFragment frag = (NoteFragment) fragment;

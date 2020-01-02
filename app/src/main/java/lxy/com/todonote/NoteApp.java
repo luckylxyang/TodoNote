@@ -3,7 +3,6 @@ package lxy.com.todonote;
 import android.app.Application;
 import android.content.Context;
 
-import com.tencent.mmkv.MMKV;
 
 
 /**
@@ -19,9 +18,9 @@ public class NoteApp extends Application {
     public void onCreate() {
         super.onCreate();
         context = getApplicationContext();
-        String rootDir = MMKV.initialize(this);
-        MMKV.mmkvWithID("cookies_prefs", MMKV.MULTI_PROCESS_MODE);
-        System.out.println("mmkv root: " + rootDir);
+//        String rootDir = MMKV.initialize(this);
+//        MMKV.mmkvWithID("cookies_prefs", MMKV.MULTI_PROCESS_MODE);
+//        System.out.println("mmkv root: " + rootDir);
     }
 
     public static Context getContext(){

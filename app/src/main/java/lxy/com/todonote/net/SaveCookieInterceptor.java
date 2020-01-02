@@ -7,7 +7,6 @@ import android.util.Log;
 
 
 import com.google.gson.Gson;
-import com.tencent.mmkv.MMKV;
 
 import org.json.JSONArray;
 
@@ -47,28 +46,6 @@ public class SaveCookieInterceptor implements Interceptor {
             saveCookie(chain.request().url().toString(), chain.request().url().host(), model);
         }
         return response;
-    }
-
-    /**
-     * 保存cookie到本地，这里我们分别为该url和host设置相同的cookie，其中host可选
-     * 这样能使得该cookie的应用范围更广
-     */
-    private void saveCookie(String url, String domain, HashSet cookies) {
-        SharedPreferences sp = NoteApp.getContext().getSharedPreferences("cookies_prefs", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        MMKV mmkv = MMKV.mmkvWithID("cookies_prefs", MMKV.MULTI_PROCESS_MODE);
-        Log.i("OkCookieSave", Arrays.toString(cookies.toArray()));
-        if (!TextUtils.isEmpty(url)) {
-            boolean encode = mmkv.encode(url, cookies);
-            Log.i("OkCookieResult",String.valueOf(encode));
-            editor.putStringSet(url,cookies);
-        }
-
-        if (!TextUtils.isEmpty(domain)) {
-            boolean encode = mmkv.encode(domain,cookies);
-            Log.i("OkCookieResultdomain",String.valueOf(encode));
-        }
-//        editor.apply();
     }
 
     private void saveCookie(String url, String domain, List<String> cookies) {

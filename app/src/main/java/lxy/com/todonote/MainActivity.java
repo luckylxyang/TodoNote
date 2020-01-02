@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.tencent.mmkv.MMKV;
 
 import lxy.com.todonote.login.LoginActivity;
 import lxy.com.todonote.login.LoginUtil;

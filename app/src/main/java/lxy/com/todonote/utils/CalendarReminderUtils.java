@@ -101,7 +101,8 @@ public class CalendarReminderUtils {
     /**
      * 添加日历事件
      */
-    public static void addCalendarEvent(Context context, String title, String description, long reminderTime, int previousDate) {
+    public static void addCalendarEvent(Context context, String title, String description,
+                                        long reminderTime, int previousDate) {
         if (context == null) {
             return;
         }
